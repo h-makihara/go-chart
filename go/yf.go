@@ -5,18 +5,22 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 func urlCreater(symbol, interval, start_time, end_time string) string {
-	url :="https://query1.finance.yahoo.com/v8/finance/chart/"
-	url =
-	return url
+	return "https://query1.finance.yahoo.com/v8/finance/chart/" + symbol + ".T?symbol=" + symbol + ".T&period1=" + start_time + "&period2=" + end_time + "&interval=" + interval + "&includePrePost=true&events=div%7Csplit%7Cearn&lang=en-US&region=US&crumb=t5QZMhgytYZ&corsDomain=finance.yahoo.com"
 }
 
 func main() {
 	// Get a greeting message and print it.
-	url := "https://query1.finance.yahoo.com/v8/finance/chart/8304.T?symbol=8304.T&period1=1652659200&period2=1652662800&interval=5m&includePrePost=true&events=div%7Csplit%7Cearn&lang=en-US&region=US&crumb=t5QZMhgytYZ&corsDomain=finance.yahoo.com"
+	// Allow variables to change automatically in the future
 	symbol := 8304
+	interval := "5m"
+	start_time := "1652659200"
+	end_time := "1652662800"
+
+	url := urlCreater(strconv.Itoa(symbol), interval, start_time, end_time)
 
 	req, _ := http.NewRequest(http.MethodGet, url, nil)
 	client := new(http.Client)
