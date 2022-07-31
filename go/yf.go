@@ -19,6 +19,7 @@ type Chart struct {
 type Result struct {
 	Indicators Indicator   `json:"indicators"`
 	Meta       interface{} `json:"-"`
+	Timestamp  []int64     `json:"timestamp"`
 }
 type Indicator struct {
 	Quotes []Quote `json:"quote"`
@@ -59,32 +60,17 @@ func unixtimeCreater(yy, mm, dd, hh, min, sec, msec int) int64 {
 	return ut
 }
 
-func fin_print(res Response) {
+func fin_print(res Response, s_time int64, e_time int64) {
+	fmt.Printf("show data at %v to %v\n", time.Unix(s_time, 0), time.Unix(e_time, 0))
 	for i := 0; i < len(res.Chart.Result); i++ {
 		for j := 0; j < len(res.Chart.Result[i].Indicators.Quotes); j++ {
-			fmt.Println("Open : ")
 			for k := 0; k < len(res.Chart.Result[i].Indicators.Quotes[j].Open); k++ {
-				fmt.Printf("  %v\n", res.Chart.Result[i].Indicators.Quotes[j].Open[k])
-			}
-
-			fmt.Println("End : ")
-			for k := 0; k < len(res.Chart.Result[i].Indicators.Quotes[j].End); k++ {
-				fmt.Printf("  %v\n", res.Chart.Result[i].Indicators.Quotes[j].End[k])
-			}
-
-			fmt.Println("High : ")
-			for k := 0; k < len(res.Chart.Result[i].Indicators.Quotes[j].High); k++ {
-				fmt.Printf("  %v\n", res.Chart.Result[i].Indicators.Quotes[j].High[k])
-			}
-
-			fmt.Println("Low : ")
-			for k := 0; k < len(res.Chart.Result[i].Indicators.Quotes[j].Low); k++ {
-				fmt.Printf("  %v\n", res.Chart.Result[i].Indicators.Quotes[j].Low[k])
-			}
-
-			fmt.Println("Volume : ")
-			for k := 0; k < len(res.Chart.Result[i].Indicators.Quotes[j].Volume); k++ {
-				fmt.Printf("  %v\n", res.Chart.Result[i].Indicators.Quotes[j].Volume[k])
+				fmt.Printf("%v : \n", time.Unix(res.Chart.Result[i].Timestamp[k], 0))
+				fmt.Printf("  Open : %v,\t", res.Chart.Result[i].Indicators.Quotes[j].Open[k])
+				fmt.Printf("End : %v,\t", res.Chart.Result[i].Indicators.Quotes[j].End[k])
+				fmt.Printf("High : %v,\t", res.Chart.Result[i].Indicators.Quotes[j].High[k])
+				fmt.Printf("Low : %v\t", res.Chart.Result[i].Indicators.Quotes[j].Low[k])
+				fmt.Printf("Volume : %v\n\n", res.Chart.Result[i].Indicators.Quotes[j].Volume[k])
 			}
 		}
 	}
@@ -100,7 +86,7 @@ func main() {
 
 	year := int(time.Now().Year())
 	month := int(time.Now().Month())
-	day := 18
+	day := 28
 	hour := 9
 	minute := 0
 	second := 0
@@ -108,7 +94,7 @@ func main() {
 
 	// set start time and end time
 	s_time := unixtimeCreater(year, month, day, hour, minute, second, msecond)
-	e_time := unixtimeCreater(year, month, day+5, hour+6, minute, second, msecond)
+	e_time := unixtimeCreater(year, month, day+1, hour+7, minute, second, msecond)
 
 	url := urlCreater(strconv.Itoa(symbol), interval, strconv.Itoa(int(s_time)), strconv.Itoa(int(e_time)))
 
@@ -127,7 +113,7 @@ func main() {
 
 	var res Response
 	json.Unmarshal(body, &res)
-	fin_print(res)
+	fin_print(res, s_time, e_time)
 	fmt.Printf("start time : %v\n", s_time)
 	fmt.Printf("end   time : %v\n", e_time)
 
