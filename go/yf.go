@@ -42,9 +42,9 @@ type Quote struct {
 func urlCreater(symbol, interval, start_time, end_time string) string {
 	return "https://query1.finance.yahoo.com/v8/finance/chart/" +
 		symbol +
-		".T?symbol=" +
+		"?symbol=" +
 		symbol +
-		".T&period1=" +
+		"&period1=" +
 		start_time +
 		"&period2=" +
 		end_time +
@@ -79,14 +79,14 @@ func fin_print(res Response, s_time int64, e_time int64) {
 func main() {
 	// Get a greeting message and print it.
 	// Allow variables to change automatically in the future
-	symbol := 8304
+	symbol := "SPYD"
 
 	// interval: [1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo]
 	interval := "5m"
 
 	year := int(time.Now().Year())
 	month := int(time.Now().Month())
-	day := 28
+	day := 2
 	hour := 9
 	minute := 0
 	second := 0
@@ -96,7 +96,14 @@ func main() {
 	s_time := unixtimeCreater(year, month, day, hour, minute, second, msecond)
 	e_time := unixtimeCreater(year, month, day+1, hour+7, minute, second, msecond)
 
-	url := urlCreater(strconv.Itoa(symbol), interval, strconv.Itoa(int(s_time)), strconv.Itoa(int(e_time)))
+	_, t_err := strconv.Atoi(symbol)
+	// Japanese ticker symbol
+	if t_err == nil {
+		symbol = symbol + ".T"
+	}
+	fmt.Printf("symbol : %v\n", symbol)
+
+	url := urlCreater(symbol, interval, strconv.Itoa(int(s_time)), strconv.Itoa(int(e_time)))
 
 	get_res, h_err := http.Get(url)
 	if h_err != nil {
