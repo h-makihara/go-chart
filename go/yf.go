@@ -9,6 +9,45 @@ import (
 	"time"
 )
 
+type return_data struct {
+	Timestamp timestamp `json:"timestamp"`
+	Open      open      `json:"open"`
+	Close     close     `json:"close"`
+	High      high      `json:"high"`
+	Low       low       `json:"low"`
+	Volume    volume    `json:"volume"`
+}
+
+type timestamp struct {
+	name      string  `json:"name"`
+	Timestamp []int64 `json:"timestamp"`
+}
+
+type open struct {
+	name string    `json:"name"`
+	Open []float32 `json:"open"`
+}
+
+type close struct {
+	name  string    `json:"name"`
+	close []float32 `json:"close"`
+}
+
+type high struct {
+	name string    `json:"name"`
+	High []float32 `json:"high"`
+}
+
+type low struct {
+	name string    `json:"name"`
+	Low  []float32 `json:"low"`
+}
+
+type volume struct {
+	name   string `json:"name"`
+	Volume []int  `json:"volume"`
+}
+
 type Response struct {
 	Chart Chart `json:"chart"`
 }
@@ -24,13 +63,14 @@ type Result struct {
 type Indicator struct {
 	Quotes []Quote `json:"quote"`
 }
+
+// Quote data is
+// Open：始値
+// High：最高値
+// Low：最安値
+// Close：終値
+// Volume：取引量
 type Quote struct {
-	// Quote data is
-	// Open：その日の始値
-	// High：その日の最高値
-	// Low：その日の最安値
-	// Close：その日の終値
-	// Volume：その日の取引量
 	Open   []float32 `json:"open"`
 	End    []float32 `json:"close"`
 	High   []float32 `json:"high"`
@@ -60,6 +100,32 @@ func unixtimeCreater(yy, mm, dd, hh, min, sec, msec int) int64 {
 	return ut
 }
 
+func create_data(res Response, s_time int64, e_time int64) return_data {
+	var resp return_data
+	// name set
+	resp.Timestamp.name = "timestamp"
+	resp.Open.name = "open"
+	resp.Close.name = "close"
+	resp.High.name = "high"
+	resp.Low.name = "low"
+	resp.Volume.name = "volume"
+
+	resp.Timestamp.Timestamp = res.Chart.Result[0].Timestamp
+
+	for i := 0; i < len(res.Chart.Result); i++ {
+		for j := 0; j < len(res.Chart.Result[i].Indicators.Quotes); j++ {
+			for k := 0; k < len(res.Chart.Result[i].Indicators.Quotes[j].Open); k++ {
+				resp.Open.Open = append(resp.Open.Open, res.Chart.Result[i].Indicators.Quotes[j].Open[k])
+				resp.Close.close = append(resp.Close.close, res.Chart.Result[i].Indicators.Quotes[j].End[k])
+				resp.High.High = append(resp.High.High, res.Chart.Result[i].Indicators.Quotes[j].High[k])
+				resp.Low.Low = append(resp.Low.Low, res.Chart.Result[i].Indicators.Quotes[j].Low[k])
+				resp.Volume.Volume = append(resp.Volume.Volume, res.Chart.Result[i].Indicators.Quotes[j].Volume[k])
+			}
+		}
+	}
+	return resp
+}
+
 func fin_print(res Response, s_time int64, e_time int64) {
 	fmt.Printf("show data at %v to %v\n", time.Unix(s_time, 0), time.Unix(e_time, 0))
 	for i := 0; i < len(res.Chart.Result); i++ {
@@ -79,10 +145,11 @@ func fin_print(res Response, s_time int64, e_time int64) {
 func main() {
 	// Get a greeting message and print it.
 	// Allow variables to change automatically in the future
+	//symbol := "8304"
 	symbol := "SPYD"
 
-	// interval: [1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo]
-	interval := "5m"
+	// interval: [15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo]
+	interval := "30m"
 
 	year := int(time.Now().Year())
 	month := int(time.Now().Month())
@@ -120,7 +187,12 @@ func main() {
 
 	var res Response
 	json.Unmarshal(body, &res)
+
 	fin_print(res, s_time, e_time)
+	var resp return_data = create_data(res, s_time, e_time)
+
+	fmt.Println(resp)
+
 	fmt.Printf("start time : %v\n", s_time)
 	fmt.Printf("end   time : %v\n", e_time)
 
