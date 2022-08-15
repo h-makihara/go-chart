@@ -62,7 +62,7 @@ func urlCreater(symbol, interval, start_time, end_time string) string {
 		end_time +
 		"&interval=" +
 		interval +
-		"&includePrePost=true&events=div%7Csplit%7Cearn&lang=en-US&region=US&crumb=t5QZMhgytYZ&corsDomain=finance.yahoo.com"
+		"&includePrePost=true&corsDomain=finance.yahoo.com"
 }
 
 func unixtimeCreater(yy, mm, dd, hh, min, sec, msec int) int64 {
@@ -113,8 +113,8 @@ func fin_print(res Response, s_time int64, e_time int64) {
 func main() {
 	// Get a greeting message and print it.
 	// Allow variables to change automatically in the future
-	//symbol := "8304"
-	symbol := "SPYD"
+	symbol := "8304"
+	//symbol := "SPYD"
 
 	// interval: [15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo]
 	interval := "30m"
@@ -139,7 +139,7 @@ func main() {
 	fmt.Printf("symbol : %v\n", symbol)
 
 	url := urlCreater(symbol, interval, strconv.Itoa(int(s_time)), strconv.Itoa(int(e_time)))
-
+	fmt.Println(url)
 	get_res, h_err := http.Get(url)
 	if h_err != nil {
 		fmt.Println(h_err)
