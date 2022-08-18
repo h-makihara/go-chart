@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -92,25 +93,12 @@ func create_data(res Response, s_time int64, e_time int64) return_data {
 	return resp
 }
 
-/*
-func fin_print(res Response, s_time int64, e_time int64) {
-	fmt.Printf("show data at %v to %v\n", time.Unix(s_time, 0), time.Unix(e_time, 0))
-	for i := 0; i < len(res.Chart.Result); i++ {
-		for j := 0; j < len(res.Chart.Result[i].Indicators.Quotes); j++ {
-			for k := 0; k < len(res.Chart.Result[i].Indicators.Quotes[j].Open); k++ {
-				fmt.Printf("%v : \n", time.Unix(res.Chart.Result[i].Timestamp[k], 0))
-				fmt.Printf("  Open : %v,\t", res.Chart.Result[i].Indicators.Quotes[j].Open[k])
-				fmt.Printf("End : %v,\t", res.Chart.Result[i].Indicators.Quotes[j].Close[k])
-				fmt.Printf("High : %v,\t", res.Chart.Result[i].Indicators.Quotes[j].High[k])
-				fmt.Printf("Low : %v\t", res.Chart.Result[i].Indicators.Quotes[j].Low[k])
-				fmt.Printf("Volume : %v\n\n", res.Chart.Result[i].Indicators.Quotes[j].Volume[k])
-			}
-		}
-	}
+func homePage(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Welcome to h-makihara homepage")
+	fmt.Println("Endpoint Hit : homePage")
 }
-*/
 
-func main() {
+func get_finance(w http.ResponseWriter, r *http.Request) {
 	// Get a greeting message and print it.
 	// Allow variables to change automatically in the future
 	symbol := "8304"
@@ -130,6 +118,10 @@ func main() {
 	// set start time and end time
 	s_time := unixtimeCreater(year, month, day, hour, minute, second, msecond)
 	e_time := unixtimeCreater(year, month, day+1, hour+7, minute, second, msecond)
+
+	// print unix time for debug to use get data from browser
+	fmt.Printf("start time : %v\n", s_time)
+	fmt.Printf("end   time : %v\n", e_time)
 
 	_, t_err := strconv.Atoi(symbol)
 	// Japanese ticker symbol
@@ -158,17 +150,24 @@ func main() {
 
 	//fin_print(res, s_time, e_time)
 	var resp return_data = create_data(res, s_time, e_time)
+	json.NewEncoder(w).Encode(resp)
 
+	// debug print
 	ret_json, err := json.Marshal(resp)
 	if err != nil {
 		fmt.Println(err)
 	}
-
 	out := new(bytes.Buffer)
 	json.Indent(out, ret_json, "", "     ")
 	fmt.Println(out.String())
+}
 
-	fmt.Printf("start time : %v\n", s_time)
-	fmt.Printf("end   time : %v\n", e_time)
+func handleRequests() {
+	http.HandleFunc("/", homePage)
+	http.HandleFunc("/get-fin", get_finance)
+	log.Fatal(http.ListenAndServe(":8081", nil))
+}
 
+func main() {
+	handleRequests()
 }
